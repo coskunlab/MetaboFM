@@ -24,3 +24,16 @@
 - **m/z importance:** distinct spectral intervals drive separation for organ/tissue, condition, and ionization source.
 
 ---
+
+## 📓 Notebooks
+
+The `notebooks/` directory provides end-to-end Jupyter workflows for reproducing MetaboFM’s data processing, representation learning, and evaluation experiments.
+
+| File | Description |
+|------|--------------|
+| **01_metaspace.ipynb** | Downloads and preprocesses public MSI datasets from METASPACE, applies FDR filtering, intensity normalization, tiling, and metadata harmonization. |
+| **02_feature_extraction.ipynb** | Extracts pretrained Vision Transformer embeddings (DINOv2, DeiT, MAE) from MSI tiles and generates per-tile feature vectors. |
+| **03_vqa.ipynb** | Demonstrates the multimodal Visual Question Answering (VQA) pipeline linking MSI embeddings with natural-language queries using a cross-attention fusion module. |
+| **04_mz_spectrum_analysis.ipynb** | Performs m/z attribution analysis to map latent embedding directions to interpretable spectral intervals for biological interpretation. |
+| **fm_utils.py** | Core helper functions for data loading, feature extraction, normalization, and evaluation. |
+| **vqa_utils.py** | Utility functions for question routing, text embedding, and cross-modal fusion used in VQA notebooks. |

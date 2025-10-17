@@ -16,7 +16,7 @@
 
 ---
 
-## 🧪 Key Results (from manuscript)
+## 🧪 Key Results
 
 - **Linear probe (frozen encoders):** macro–F1 **0.74**, accuracy **0.80** (mean across six tasks) using **DINOv2–ViT–B/14 (LVD-142M)**. PCA/random baselines trail by **>20 points**.  
 - **Task-level bests (macro–F1):** analyzer type 0.80, polarity 0.82, ionization source 0.78, organ/tissue 0.69, organism 0.82, condition 0.64.  

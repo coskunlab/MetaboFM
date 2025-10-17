@@ -2,10 +2,6 @@
 
 > **MetaboFM** unifies large-scale **mass spectrometry imaging (MSI)** data curation, pretrained **Vision Transformer–based** representation learning, **m/z** spectral interpretability, and multimodal **visual question answering (VQA)** for interactive spatial metabolomics.
 
-<p align="center">
-  <img src="Figures/Figure1.png" width="75%" alt="MetaboFM overview">
-</p>
-
 ---
 
 ## 🔑 Highlights

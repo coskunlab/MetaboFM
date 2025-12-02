@@ -40,6 +40,5 @@ You can explore MetaboFM directly in your browser — no local setup required:
 
 How to try the demo:
 1) Open the Hugging Face Space  
-2) Click **“Load example demo.npz”** to automatically load `demo.npz`  
-   — or — upload your own `.npz` MSI tile  
+2) Click **“Load example demo.npz”** to automatically load `demo.npz` or upload your own `.npz` MSI tile  
 3) Visualize PCA-RGB / single-channel images and query metadata using free-form VQA questions

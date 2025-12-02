@@ -36,6 +36,12 @@ This repository contains the Gradio interface for MetaboFM:
 |------|---------|
 | `gradio_app.ipynb` | Upload an MSI tile (`.npz`), visualize it, and ask free-form metadata questions using the MetaboFM VQA model. |
 
-Run the notebook and a Gradio widget will launch for interactive MSI exploration.
+To run the notebook, download the pretrained model checkpoint from Hugging Face:
 
----
+🔗 https://huggingface.co/efesthefirst/metabofm  
+📂 Folder: `20251113_182023/`  
+📌 Available weights: `best.pt` (recommended) or `last.pt`
+
+Set the checkpoint path in the notebook before launching Gradio:
+```python
+CHECKPOINT_PATH = "/path/to/20251113_182023/best.pt"

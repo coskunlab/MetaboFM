@@ -25,19 +25,19 @@
 - **Spatio–spectral attention:** top-ranked **m/z** channels show spatial patterns consistent with biological / pathological tissue structure.
 - **Healthy vs Tumor case study:** MetaboFM embeddings achieve **macro–F1 = 0.86** and identify condition-specific high-attribution **m/z** peaks and spatial saliency in kidney MSI.
 - **VQA (5-fold CV):** **macro–F1 = 0.69 ± 0.03**, **accuracy = 0.79 ± 0.02** across six metadata categories using a frozen MSI encoder and partially fine-tuned MiniLM text encoder.
-- 
+
 ---
 
 ## 🚀 Interactive Demo
 
-This repository contains the Gradio interface for MetaboFM:
+You can explore MetaboFM directly in your browser — no local setup required:
+
+🔗 https://huggingface.co/spaces/efesthefirst/metabofm
 
 | File | Purpose |
 |------|---------|
-| `gradio_app.ipynb` | Upload an MSI tile (`.npz`), visualize it, and ask free-form metadata questions using the MetaboFM VQA model. |
+| `demo.npz` | Example MSI tile for testing the web demo. Download from this repository and upload to the web app. |
 
-To run the notebook, download the pretrained model checkpoint from Hugging Face:
-
-🔗 https://huggingface.co/efesthefirst/metabofm  
-📂 Folder: `20251113_182023/`  
-📌 Available weights: `best.pt` (recommended) or `last.pt`
+1) Download `demo.npz` from this GitHub repo  
+2) Open the Hugging Face Space  
+3) Upload `demo.npz`, visualize PCA-RGB / single-channel images, and query metadata using free-form text questions via the VQA interface

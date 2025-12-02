@@ -36,8 +36,10 @@ You can explore MetaboFM directly in your browser — no local setup required:
 
 | File | Purpose |
 |------|---------|
-| `demo.npz` | Example MSI tile for testing the web demo. Download from this repository and upload to the web app. |
+| `demo.npz` | Example MSI tile for testing the web demo. The app includes a button that auto-loads this file, or you can upload your own `.npz` MSI tile. |
 
-1) Download `demo.npz` from this GitHub repo  
-2) Open the Hugging Face Space  
-3) Upload `demo.npz`, visualize PCA-RGB / single-channel images, and query metadata using free-form text questions via the VQA interface
+How to try the demo:
+1) Open the Hugging Face Space  
+2) Click **“Load example demo.npz”** to automatically load `demo.npz`  
+   — or — upload your own `.npz` MSI tile  
+3) Visualize PCA-RGB / single-channel images and query metadata using free-form VQA questions

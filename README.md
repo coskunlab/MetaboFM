@@ -1,27 +1,30 @@
 # MetaboFM: A Foundation Model for Spatial Metabolomics
 
-> **MetaboFM** unifies large-scale **mass spectrometry imaging (MSI)** data curation, pretrained **Vision Transformer–based** representation learning, **m/z** spectral interpretability, and multimodal **visual question answering (VQA)** for interactive spatial metabolomics.
+> **MetaboFM** unifies large-scale **mass spectrometry imaging (MSI)** curation, **Vision Transformer–based** representation learning, **spatio–spectral interpretability**, and multimodal **visual question answering (VQA)** for interactive and interpretable spatial metabolomics.
 
 ---
 
 ## 🔑 Highlights
 
-- **Unified data curation** for public MSI datasets (METASPACE) with consistent FDR, MSM prioritization, tiling, and metadata harmonization.  
-- **Pretrained ViTs** (DINOv2, DeiT, MAE) used as frozen feature extractors for MSI—no fine-tuning required.  
-- **Six metadata tasks:** organism, ionization polarity, organ/tissue, condition, analyzer type, ionization source.  
-- **Linear probes and few-shot probes** to quantify transferability and label efficiency.  
-- **m/z attribution** maps latent directions back to spectral intervals for interpretability.  
-- **VQA module** integrates MSI embeddings and text encoder via cross-attention for natural-language queries.  
-- **Gradio app** for uploading MSI patches, visualizing PCA-RGB/single-channel, and querying metadata.
+- **Large-scale curated MSI corpus** from METASPACE with consistent FDR filtering, MSM-based channel prioritization, percentile normalization, tiling, and metadata harmonization across six categories.
+- **Vision Transformers for MSI** — pretrained **DINOv2–ViT-B/14** and **MAE–ViT-B/16** adapted via a **two-phase multi-task fine-tuning** strategy.
+- **Six metadata tasks:** organism, ionization polarity, organ/tissue, condition, analyzer type, ionization source.
+- **Linear and few-shot probes** to quantify transferability and label efficiency.
+- **Spatio–spectral attention** combines transformer attention rollout with Input×Grad channel saliency to map embedding directions to spatial regions and their most influential **m/z** channels.
+- **VQA module** fuses MSI embeddings with text embeddings via a **lightweight fusion MLP** to answer natural-language metadata questions.
+- **Interactive Gradio app** for uploading MSI tiles, visualizing PCA-RGB / single-channel images, and querying metadata via free-form text prompts.
 
 ---
 
 ## 🧪 Key Results
 
-- **Linear probe (frozen encoders):** macro–F1 **0.74**, accuracy **0.80** (mean across six tasks) using **DINOv2–ViT–B/14 (LVD-142M)**. PCA/random baselines trail by **>20 points**.  
-- **Task-level bests (macro–F1):** analyzer type 0.80, polarity 0.82, ionization source 0.78, organ/tissue 0.69, organism 0.82, condition 0.64.  
-- **VQA (5-fold CV):** macro–F1 0.61 ± 0.05, accuracy 0.74 ± 0.03.  
-- **m/z importance:** distinct spectral intervals drive separation for organ/tissue, condition, and ionization source.
+- **Linear probe (frozen encoders):** pretrained DINOv2–ViT-B/14 achieves **macro–F1 = 0.74** (mean across six metadata tasks).
+- **MSI-specific multi-task fine-tuning** improves discriminative power across tasks, especially for **organ/tissue**, **condition**, **analyzer type**, and **ionization source**.
+- **Few-shot learning:** performance increases steadily with {1, 5, 10, 25} labeled samples per class, with fine-tuned DINOv2 consistently outperforming the pretrained variant.
+- **Unsupervised structure:** MSI fine-tuning yields **up to >2× improvement in ARI**, indicating sharper metadata-aligned clustering.
+- **Spatio–spectral attention:** top-ranked **m/z** channels show spatial patterns consistent with biological / pathological tissue structure.
+- **Healthy vs Tumor case study:** MetaboFM embeddings achieve **macro–F1 = 0.86** and identify condition-specific high-attribution **m/z** peaks and spatial saliency in kidney MSI.
+- **VQA (5-fold CV):** **macro–F1 = 0.69 ± 0.03**, **accuracy = 0.79 ± 0.02** across six metadata categories using a frozen MSI encoder and partially fine-tuned MiniLM text encoder.
 
 ---
 

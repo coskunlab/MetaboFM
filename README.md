@@ -25,3 +25,17 @@
 - **Spatio–spectral attention:** top-ranked **m/z** channels show spatial patterns consistent with biological / pathological tissue structure.
 - **Healthy vs Tumor case study:** MetaboFM embeddings achieve **macro–F1 = 0.86** and identify condition-specific high-attribution **m/z** peaks and spatial saliency in kidney MSI.
 - **VQA (5-fold CV):** **macro–F1 = 0.69 ± 0.03**, **accuracy = 0.79 ± 0.02** across six metadata categories using a frozen MSI encoder and partially fine-tuned MiniLM text encoder.
+- 
+---
+
+## 🚀 Interactive Demo
+
+This repository contains the Gradio interface for MetaboFM:
+
+| File | Purpose |
+|------|---------|
+| `gradio_app.ipynb` | Upload an MSI tile (`.npz`), visualize it, and ask free-form metadata questions using the MetaboFM VQA model. |
+
+Run the notebook and a Gradio widget will launch for interactive MSI exploration.
+
+---

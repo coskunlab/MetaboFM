@@ -41,5 +41,3 @@ To run the notebook, download the pretrained model checkpoint from Hugging Face:
 🔗 https://huggingface.co/efesthefirst/metabofm  
 📂 Folder: `20251113_182023/`  
 📌 Available weights: `best.pt` (recommended) or `last.pt`
-```python
-CHECKPOINT_PATH = "/path/to/20251113_182023/best.pt"

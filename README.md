@@ -29,6 +29,7 @@
 ---
 
 ## 🚀 Interactive Demo
+## 🚀 Interactive Demo
 
 🔗 **Try MetaboFM in your browser:**  
 https://huggingface.co/spaces/efesthefirst/metabofm
@@ -42,6 +43,16 @@ https://huggingface.co/spaces/efesthefirst/metabofm
 2. Click **Load example demo.npz** or upload your own `.npz`  
 3. View PCA-RGB or spectral channels  
 4. Ask free-form questions (e.g., *"What is the ionization polarity?"*)  
+
+### **Expected Output**
+- PCA-RGB visualization of the MSI tile  
+- Option to display any individual **m/z** channel  
+- VQA answers to natural-language questions  
+
+### **Expected Runtime on a Normal Desktop**
+- **App startup:** <3 seconds  
+- **Loading `demo.npz`:** <1 second  
+- **VQA prediction:** <30 seconds (CPU), <5 seconds (GPU)
 
 ---
 
@@ -72,7 +83,12 @@ All dependencies are fully specified in **`environment.yaml`**.
 
 ---
 
-## 🛠️ Installation
+## 🛠️ Installation Guide
+
+**Installation time:**  
+- ~10-15 minutes on a normal desktop computer using conda.
+
+### Install (Conda)
 
 git clone https://github.com/coskunlab/MetaboFM.git
 cd MetaboFM

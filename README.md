@@ -35,7 +35,7 @@ https://huggingface.co/spaces/efesthefirst/metabofm
 
 | File | Purpose |
 |------|---------|
-| `demo.npz` | Example MSI tile for quick demo. Auto-load button included. |
+| `demo.npz` | Example MSI tile for quick demo. |
 
 ### How to use the demo:
 1. Open the Hugging Face Space  

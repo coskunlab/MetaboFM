@@ -58,15 +58,17 @@ https://huggingface.co/spaces/efesthefirst/metabofm
 - CPU-compatible  
 - GPU recommended (≥8GB VRAM)
 
-**Key dependencies:**
-- PyTorch ≥ 2.2  
-- timm ≥ 0.9  
+## 🔧 Key Dependencies
+
+- PyTorch 
+- timm  
 - transformers  
-- scikit-learn, NumPy, SciPy  
+- scikit-learn  
+- NumPy, SciPy  
 - Gradio  
 - tqdm  
 
-Full list in `requirements.txt`.
+All dependencies are fully specified in **`environment.yaml`**.
 
 ---
 
@@ -74,12 +76,12 @@ Full list in `requirements.txt`.
 
 git clone https://github.com/coskunlab/MetaboFM.git
 cd MetaboFM
-pip install -r requirements.txt
+conda env create -f environment.yaml
+conda activate metabofm
 
 ## 📁 Notebooks
 
 All results are reproducible via the notebooks in:
-
 
 ### Notebooks include:
 

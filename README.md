@@ -50,7 +50,6 @@ https://huggingface.co/spaces/efesthefirst/metabofm
 ## 🔧 System Requirements
 
 **Operating systems:**
-- Ubuntu 20.04 / 22.04  
 - Windows 10 / 11  
 
 **Python:** 3.10  

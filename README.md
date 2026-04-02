@@ -94,11 +94,9 @@ These resources enable joint modeling of spatial ion distributions and molecular
 
 **Operating systems:**
 - Windows 10 / 11
-- Linux
-- macOS
 
 **Python:**
-- Python 3.10
+- > Python 3.10
 
 **Hardware:**
 - CPU-compatible
@@ -229,19 +227,6 @@ All code for the following components is available in the MetaboFM repository:
 - Molecular structure integration
 - Downstream benchmarking
 - Embedding analysis
-
----
-
-## 📝 Notes on Current Repository Scope
-
-This repository has been updated to match the current manuscript direction. Compared with earlier versions, the current framing:
-
-- Emphasizes multimodal representation learning for spatial metabolomics
-- Centers on MAE-based MSI embedding learning
-- Focuses on sample-level embeddings, channel-level embeddings, and SMILES-based multimodal fusion
-- Highlights classification, retrieval, and metabolite-level semantic prediction
-- Removes the earlier emphasis on interactive demo components
-- Removes the earlier emphasis on VQA-based metadata question answering
 
 ---
 

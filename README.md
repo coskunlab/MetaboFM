@@ -153,16 +153,18 @@ The primary workflow is organized through notebooks and supporting scripts in th
 ```
 MetaboFM/
 ├── notebooks/
-│   ├── 01_metapace.ipynb
-│   ├── 02_create_df_meta.ipynb
-│   ├── 03_multitask_finetuning.ipynb
-│   ├── 04_downstream_tasks.ipynb
-│   ├── 05_ari.ipynb
-│   ├── 06_spatio_spectral_attention.ipynb
-│   ├── 07_application.ipynb
+│   ├── 01_metaspace.ipynb
+│   ├── 02_metaspace_add_candidate_molecules.ipynb
+│   ├── 03_molformer_embed_smiles.ipynb
+│   ├── 04_process_knowledgebase.ipynb
+│   ├── 05_align_embedding_modalities.ipynb
+│   ├── 06_interactive_exploration.ipynb
+│   ├── 07_benchmarks.ipynb
+│   ├── 08_benchmarks_hmdb.ipynb
+│   ├── 09_domain_shift.ipynb
+│   ├── 10_interpretability.ipynb
 ├── environment.yaml
 ├── README.md
-└── ...
 ```
 
 ---
@@ -173,13 +175,16 @@ All major analyses are reproducible through the notebooks in the repository:
 
 | Notebook | Description |
 |---|---|
-| `01_metapace.ipynb` | Dataset retrieval and curation from public MSI resources |
-| `02_create_df_meta.ipynb` | Metadata harmonization and preprocessing |
-| `03_multitask_finetuning.ipynb` | Representation learning and model training |
-| `04_downstream_tasks.ipynb` | Linear evaluation, biological classification, semantic prediction, and retrieval benchmarks |
-| `05_ari.ipynb` | Unsupervised clustering and representation structure analysis |
-| `06_spatio_spectral_attention.ipynb` | Embedding interpretation and channel-level attribution analyses |
-| `07_application.ipynb` | Example downstream biological application and case-study analysis |
+| `01_metaspace.ipynb` | Dataset retrieval and curation from public MSI resources |
+| `02_metaspace_add_candidate_molecules.ipynb` | Adding and linking candidate molecules to MSI datasets |
+| `03_molformer_embed_smiles.ipynb` | Encoding molecular structures from SMILES strings using Molformer |
+| `04_process_knowledgebase.ipynb` | Processing and harmonizing metabolite knowledge base resources |
+| `05_align_embedding_modalities.ipynb` | Multimodal alignment of MSI and molecular structure embeddings |
+| `06_interactive_exploration.ipynb` | Interactive visualization and exploration of the embedding space |
+| `07_benchmarks.ipynb` | Biological classification and retrieval benchmark evaluations |
+| `08_benchmarks_hmdb.ipynb` | HMDB-based metabolite-level semantic prediction benchmarks |
+| `09_domain_shift.ipynb` | Domain shift and cross-dataset generalization analyses |
+| `10_interpretability.ipynb` | Embedding interpretation of molecules and spatial correlation analysis |
 
 ---
 

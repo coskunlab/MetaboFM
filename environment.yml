@@ -1,4 +1,4 @@
-name: magic
+name: metabofm
 channels:
   - conda-forge
   - defaults

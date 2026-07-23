@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+data/
+outputs/
+checkpoints/
+*.pt
+*.npy
+*.npz
+*.parquet
+.ipynb_checkpoints/

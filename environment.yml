@@ -1,0 +1,23 @@
+name: metabofm
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pytorch
+  - torchvision
+  - pytorch-cuda=12.1
+  - numpy
+  - pandas
+  - scikit-learn
+  - umap-learn
+  - matplotlib
+  - scipy
+  - pyarrow
+  - tqdm
+  - requests
+  - pillow
+  - pip
+  - pip:
+      - python-docx

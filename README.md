@@ -1,240 +1,96 @@
-# MetaboFM: Multimodal Representation Learning for Spatial Metabolomics
+# MetaboFM
 
-> **MetaboFM** is a multimodal representation learning framework for **mass spectrometry imaging (MSI)** that integrates **MSI-derived spatial embeddings** with **molecular structure information encoded from SMILES strings** to learn transferable representations across large and heterogeneous spatial metabolomics datasets.
+Self-supervised representation learning for mass spectrometry imaging (MSI). MetaboFM is a
+two-stage framework: Stage 1 learns spatially aware embeddings of individual ion images with a
+Barlow Twins objective; Stage 2 aggregates all detected channels in a sample with a Transformer,
+using each channel's *m/z* as positional context, to produce a refined per-channel embedding and
+a pooled per-sample embedding. Trained on 158,405 ion images from 5,600 public MSI samples
+spanning 8 ionization sources, 17 mass analyzer types, and both polarities.
 
----
+See [`ARCHITECTURE.md`](ARCHITECTURE.md) for the full model and pipeline description.
 
-## 🔑 Highlights
+## Installation
 
-- **Large-scale curated MSI corpus** aggregated primarily from **METASPACE**, spanning diverse organs, conditions, ionization sources, analyzer types, and polarities.
-- **Masked autoencoder (MAE)-based representation learning** for stacked MSI ion images using a Vision Transformer backbone.
-- **Channel-aware training strategies**, including channel permutation, channel dropout, and structured channel retention, to improve robustness to sparse and heterogeneous MSI measurements.
-- **Two complementary MSI representations**:
-  - **Sample-level embeddings** capturing global spatial metabolite organization
-  - **Channel-level embeddings** capturing annotation-level metabolite-associated spatial patterns
-- **Multimodal fusion** of MSI embeddings with **SMILES-derived molecular structure embeddings**.
-- **Benchmark evaluation suite** covering:
-  - biological classification
-  - metabolite-level semantic prediction
-  - nearest-neighbor retrieval
-  - molecule-level embedding analysis
-- **Context-aware molecular representation**, showing that repeated observations of the same molecular annotation can shift systematically across tissue environments rather than collapsing to a single invariant representation.
-
----
-
-## 🧪 Key Results
-
-- Trained on approximately:
-  - **5,800 MSI datasets**
-  - **165,000 ion images**
-  - **27,000 distinct molecules**
-- Learned embeddings consistently outperformed MSI-only and engineered baselines across benchmark tasks.
-- For metabolite-level semantic prediction, the best-performing multimodal representation achieved:
-  - **Macro-F1 = 0.773 ± 0.013**
-  - **Macro-F1 = 0.783 ± 0.010**
-  on hierarchical metabolite annotation tasks.
-- The learned embedding space preserved:
-  - **biological variation**, supporting condition and organ classification
-  - **chemical structure**, supporting metabolite-level semantic organization and retrieval
-  - **context-dependent molecular variation**, where the same annotation changes representation according to tissue environment
-
----
-
-## 📘 Overview
-
-Mass spectrometry imaging enables label-free molecular mapping across tissues, but MSI datasets are high-dimensional, sparse, and highly heterogeneous across biological systems and acquisition platforms. MetaboFM addresses this challenge by learning a unified embedding space that combines:
-
-- **spatial information** from MSI ion images
-- **chemical structure information** from molecular SMILES strings
-- **biological and technical metadata** associated with public MSI datasets
-
-The framework is designed to support transferable analysis across diverse MSI datasets and downstream tasks, including biological prediction, molecular retrieval, and metabolite-level semantic annotation.
-
----
-
-## 🧠 Method Summary
-
-MetaboFM consists of five main stages:
-
-1. **MSI dataset curation and preprocessing**
-   Public MSI datasets are aggregated and harmonized. Retained annotations are filtered and ranked by confidence, and top ion images are stacked into multi-channel MSI inputs.
-
-2. **Self-supervised MSI representation learning**
-   A **masked autoencoder (MAE)** is trained on stacked ion images using channel-aware perturbations, including channel permutation, channel dropout, and structured channel retention.
-
-3. **Embedding extraction**
-   The trained encoder produces:
-   - **sample-level embeddings** from full multi-channel MSI inputs
-   - **channel-level embeddings** from individual ion images
-
-4. **Molecular structure integration**
-   Candidate molecules with valid PubChem-derived SMILES strings are encoded with **Molformer**, producing structure-aware embeddings.
-
-5. **Multimodal fusion and downstream evaluation**
-   MSI embeddings and SMILES embeddings are combined in multiple fusion variants and evaluated on classification, retrieval, and semantic prediction tasks.
-
----
-
-## 📊 Data Sources
-
-MetaboFM integrates MSI data and external molecular knowledge from:
-
-- **METASPACE** — public spatial metabolomics datasets
-- **PubChem** — molecular identifiers and structures
-- **HMDB** — metabolite taxonomy and hierarchical labels
-- **PathBank** — pathway-level biological knowledge
-
-These resources enable joint modeling of spatial ion distributions and molecular annotations across diverse experimental settings.
-
----
-
-## 📦 Software & Code Information
-
-### 🔧 System Requirements
-
-**Operating systems:**
-- Windows 10 / 11
-
-**Python:**
-- > Python 3.10
-
-**Hardware:**
-- CPU-compatible
-- GPU recommended for representation learning and large-scale embedding extraction
-- Development and main experiments were run on an **NVIDIA GeForce RTX 4090 GPU**
-
----
-
-### 🔧 Key Dependencies
-
-- PyTorch
-- Hugging Face Transformers
-- timm
-- scikit-learn
-- NumPy
-- SciPy
-- pandas
-- matplotlib
-- tqdm
-
-All dependencies are fully specified in **`environment.yaml`**.
-
----
-
-### 🛠️ Installation Guide
-
-**Typical installation time:** ~10–15 minutes on a normal desktop computer using conda
 ```bash
-git clone https://github.com/coskunlab/MetaboFM.git
-cd MetaboFM
-conda env create -f environment.yaml
+conda env create -f environment.yml
 conda activate metabofm
 ```
 
----
+Requires a CUDA-capable GPU for training and embedding extraction; benchmark and plotting scripts
+can run on CPU.
 
-## ▶️ Running the Code
+## Configuration
 
-After installation, the repository can be used to reproduce the major stages of the MetaboFM workflow:
+All scripts import their data/output directories from [`metabofm_paths.py`](metabofm_paths.py)
+instead of hardcoding paths. Set these environment variables before running anything:
 
-- MSI dataset retrieval and curation
-- metadata harmonization
-- MSI preprocessing and channel construction
-- MAE-based representation learning
-- embedding extraction
-- multimodal fusion with molecular structure embeddings
-- downstream benchmarking and analysis
-
-The primary workflow is organized through notebooks and supporting scripts in the repository.
-
----
-
-## 📁 Repository Structure
-```
-MetaboFM/
-├── notebooks/
-│   ├── 01_metaspace.ipynb
-│   ├── 02_metaspace_add_candidate_molecules.ipynb
-│   ├── 03_molformer_embed_smiles.ipynb
-│   ├── 04_process_knowledgebase.ipynb
-│   ├── 05_align_embedding_modalities.ipynb
-│   ├── 06_interactive_exploration.ipynb
-│   ├── 07_benchmarks.ipynb
-│   ├── 08_benchmarks_hmdb.ipynb
-│   ├── 09_domain_shift.ipynb
-│   ├── 10_interpretability.ipynb
-├── environment.yaml
-├── README.md
+```bash
+export METABOFM_ROOT=/path/to/metabofm      # contains data/ and outputs/
+export METABOFM_RAW_DIR=/path/to/raw/msi    # raw per-sample .npz ion-image stacks
 ```
 
----
+## Data
 
-## 📓 Notebooks
+MetaboFM is trained on public MSI datasets aggregated from [METASPACE](https://metaspace2020.eu/)
+via its GraphQL API. `filter_samples.py` applies the quality filters described in Methods
+(minimum pixel dimensions, sparsity, channel count) and `build_channel_csv.py` expands the
+resulting sample-level manifest into the channel-level manifest used everywhere downstream.
 
-All major analyses are reproducible through the notebooks in the repository:
+## Pipeline
 
-| Notebook | Description |
+1. **Data curation** — `filter_samples.py`, `build_channel_csv.py`.
+2. **Stage 1 training** — `pretrain_stage1.py`: ResNet-18 encoder trained with Barlow Twins +
+   spatial coherence + patch-level auxiliary losses on individual ion images.
+3. **Stage 2 training** — `pretrain_stage2.py`: cross-channel aggregation Transformer trained
+   with masked-channel prediction, producing refined channel embeddings and a pooled sample
+   embedding.
+4. **Embedding extraction** — `extract_stage1_embeddings.py`, `extract_stage1_patch_embeddings.py`,
+   `extract_stage2_embeddings.py`, `extract_imagenet_baseline.py`, `fuse_embeddings.py`.
+5. **Benchmarks** — `benchmarks.py`: linear probing and retrieval against HMDB chemical taxonomy,
+   plus every baseline variant (SMILES-only, *m/z*-only, ImageNet, metadata-only, ResNet+SMILES
+   fusion). `probe_crossdataset_retrieval.py` and `probe_leave_study_out.py` cover organ/organism
+   retrieval generalization, including the strict real-study-identity validation.
+6. **Figures** — one script per main/supplementary figure; see the table below.
+
+## Reproducing the figures
+
+Each script writes per-panel SVGs and a caption file to `outputs/figures/<name>/`.
+
+| Figure | Script |
 |---|---|
-| `01_metaspace.ipynb` | Dataset retrieval and curation from public MSI resources |
-| `02_metaspace_add_candidate_molecules.ipynb` | Adding and linking candidate molecules to MSI datasets |
-| `03_molformer_embed_smiles.ipynb` | Encoding molecular structures from SMILES strings using Molformer |
-| `04_process_knowledgebase.ipynb` | Processing and harmonizing metabolite knowledge base resources |
-| `05_align_embedding_modalities.ipynb` | Multimodal alignment of MSI and molecular structure embeddings |
-| `06_interactive_exploration.ipynb` | Interactive visualization and exploration of the embedding space |
-| `07_benchmarks.ipynb` | Biological classification and retrieval benchmark evaluations |
-| `08_benchmarks_hmdb.ipynb` | HMDB-based metabolite-level semantic prediction benchmarks |
-| `09_domain_shift.ipynb` | Domain shift and cross-dataset generalization analyses |
-| `10_interpretability.ipynb` | Embedding interpretation of molecules and spatial correlation analysis |
+| Fig. 1b–c | `plot_figure1_bc.py` |
+| Fig. 2 | `plot_figure2.py` |
+| Fig. 3 | `plot_figure3.py` |
+| Fig. 4 | `plot_figure4.py` |
+| Fig. 5 | `plot_figure5.py` |
+| Fig. 6 | `plot_figure6.py` |
+| Fig. 7 | `plot_figure7.py` |
+| Supp. Fig. S1 | `plot_figS1.py` |
+| Supp. Fig. S2 | `plot_figS2.py` |
+| Supp. Fig. S3 | `plot_figS3.py` |
+| Supp. Fig. S4 | `plot_figS4.py` |
+| Supp. Fig. S5 | `plot_figS5.py` |
+| Supp. Fig. S6 | `plot_figS6.py` |
+| Supp. Fig. S7 | `plot_figS7.py` |
+| Supp. Fig. S8 | `plot_figS8.py` |
+| Supp. Fig. S9 | `plot_figS9.py` |
+| Supp. Fig. S10 | `plot_figS10.py` |
+| Supp. Fig. S11 | `plot_figS11.py` |
+| Supp. Fig. S12 | `plot_figS12.py` |
+| Supp. Fig. S13 | `plot_figS13.py` |
+| Supp. Fig. S14 | `plot_figS14.py` |
+| Supp. Software 1 (interactive embedding explorer) | `export_explorer_data.py` generates the data bundled into the self-contained HTML explorer |
 
----
+## Pretrained weights
 
-## 📈 Outputs and Reproducibility
+Final Stage 1 and Stage 2 checkpoints are hosted on [Zenodo/Hugging Face — add DOI]. Download and
+point the extraction scripts' `--checkpoint` argument at the downloaded files to skip training and
+go straight to embedding extraction.
 
-The repository is intended to reproduce the main components of the manuscript, including:
+## Citation
 
-- Large-scale MSI preprocessing and annotation filtering
-- MAE-based MSI embedding learning
-- Extraction of sample-level and channel-level representations
-- Fusion with SMILES-derived molecular structure embeddings
-- Biological classification benchmarks
-- HMDB semantic prediction benchmarks
-- Nearest-neighbor retrieval analyses
-- Molecule-level embedding visualizations and downstream analyses
+[add citation block once published]
 
-For reproducibility:
+## License
 
-- Randomized procedures use a fixed seed of **6740**
-- Dataset-level splits are used for evaluation
-- Downstream classical machine learning analyses are implemented in **scikit-learn**
-- Deep learning components are implemented in **PyTorch** using **Hugging Face Transformers**
-
----
-
-## ⏱️ Expected Runtime
-
-Runtime depends on dataset size, hardware, and whether the user is reproducing full pretraining or only downstream analyses.
-
-| Stage | Approximate Time |
-|---|---|
-| Environment setup | 10–15 minutes |
-| Notebook-level downstream analyses | Minutes to hours depending on dataset size |
-| Full large-scale representation learning / embedding extraction | Substantially longer; GPU recommended |
-
----
-
-## 🧾 Code Availability
-
-All code for the following components is available in the MetaboFM repository:
-
-- Data curation
-- Feature extraction
-- Representation learning
-- Molecular structure integration
-- Downstream benchmarking
-- Embedding analysis
-
----
-
-## ⚖️ License
-
-MetaboFM is released under the **MIT License**.
+[add license]

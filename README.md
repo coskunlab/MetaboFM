@@ -89,8 +89,8 @@ go straight to embedding extraction.
 
 ## Citation
 
-[add citation block once published]
+A citation entry will be added here once the manuscript is published.
 
 ## License
 
-[add license]
+Released under the [MIT License](LICENSE).

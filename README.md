@@ -94,9 +94,14 @@ rather than committed to the repository, since it embeds ~130 MB of data and exc
 
 ## Pretrained weights
 
-Final Stage 1 and Stage 2 checkpoints are hosted on [Zenodo/Hugging Face — add DOI]. Download and
-point the extraction scripts' `--checkpoint` argument at the downloaded files to skip training and
-go straight to embedding extraction.
+Final Stage 1 and Stage 2 checkpoints (the exact weights used to produce every result in the
+manuscript) are attached to the [`weights-v1` release](https://github.com/coskunlab/MetaboFM/releases/tag/weights-v1):
+
+- `stage1_encoder_final.pt` — Stage 1 spatial encoder (ResNet-18, Barlow Twins).
+- `stage2_aggregator_final.pt` — Stage 2 channel-aggregation Transformer.
+
+Download and point the extraction scripts' `--checkpoint` argument at the downloaded files to skip
+training and go straight to embedding extraction.
 
 ## Citation
 

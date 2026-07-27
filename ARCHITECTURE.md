@@ -208,64 +208,67 @@ Molecule-level retrieval (per-class MAP@10, Stage 2): lipids 0.840, organohetero
 ## File Structure
 
 ```
-├── ARCHITECTURE.md                        ← this file
-├── metabofm_paths.py                      ← central path configuration (set METABOFM_ROOT / METABOFM_RAW_DIR)
+├── ARCHITECTURE.md                            ← this file
+├── README.md, LICENSE, environment.yml, ...   ← repo-level docs/config (siblings of code/)
 │
-├── models/
-│   ├── __init__.py
-│   ├── resnet_encoder.py                  ← Stage 1: ResNet-18 spatial encoder (Barlow Twins)
-│   └── channel_aggregator.py              ← Stage 2: permutation-invariant channel Transformer
-│
-├── dataset.py                             ← per-channel loader, returns (1, H, W) tensors
-├── utils.py                               ← shared utilities (normalization, metrics, etc.)
-│
-├── pretrain_stage1.py                     ← Stage 1 Barlow Twins pretraining (ResNet-18)
-├── pretrain_stage2.py                     ← Stage 2 masked channel pretraining
-├── plot_training.py                       ← training loss/metric plots from checkpoint logs
-│
-├── filter_samples.py                      ← quality-filter raw MSI samples (aspect ratio, sparsity)
-├── build_channel_csv.py                   ← build per-channel metadata CSV from MSI manifests
-├── build_molecule_centroids.py            ← per-m/z centroid embeddings for molecule-level analyses
-├── build_figure7_data.py                  ← drug-likeness scoring data (feeds main Fig. 6 panels d-f)
-├── generate_dataset_diversity_table.py    ← Supplementary Table 1: sample counts by platform/organ
-│
-├── extract_stage1_embeddings.py           ← extract Stage 1 CLS tokens (resnet_cls_embeddings.npy)
-├── extract_stage1_patch_embeddings.py     ← extract 28×28 patch maps (resnet_patch_embeddings.npy)
-├── extract_stage2_embeddings.py           ← extract Stage 2 embeddings (sample_cls + channel_refined)
-├── extract_stage2_unambiguous.py          ← Stage 2 embeddings restricted to n_cand==1 channels
-├── extract_unambiguous_variants.py        ← all representation variants, unambiguous-candidate subset
-├── extract_imagenet_baseline.py           ← ImageNet-pretrained ResNet zero-shot baseline
-├── fuse_embeddings.py                     ← post-hoc ResNet CLS + MolFormer fusion (n_cand==1 only)
-├── align_embeddings.py                    ← align embedding spaces across candidate/filtered manifests
-│
-├── benchmarks.py                          ← HMDB super_class/class F1, leave-platform-out probes
-├── ablation_datasize.py                   ← Stage 2 training-data-scale ablation
-├── ablation_multiseed.py / ablation_rerun_50_75.py  ← ablation seed/checkpoint reruns
-├── compute_stage1_hmdb_map.py             ← Stage 1-only HMDB MAP@k benchmark
-├── compute_lisi_scores.py / compute_lisi_scores_raw.py  ← LISI technical-covariate mixing scores
-├── compute_contiguity_baseline.py         ← random-assignment contiguity baseline (k=6)
-├── probe_spatial_patches.py               ← spatial patch analysis: coherence, microregions, leave-out probes
-├── probe_patch_coherence.py               ← training-time sanity check: spatial coherence vs checkpoint
-├── probe_resnet_umap.py                   ← per-TIFF UMAP with ROI annotations (requires TIFF stacks)
-├── probe_sample_umap.py                   ← sample-level UMAP of stage2_sample_cls embeddings
-├── probe_molecule_spatial_consistency.py  ← within- vs between-organ spatial map similarity
-├── probe_molecule_variance.py             ← full within/between-molecule cosine-similarity analysis (all m/z)
-├── probe_channel_colocalization.py        ← channel-pair spatial colocalization vs Stage 1 embedding similarity
-├── probe_crossdataset_retrieval.py        ← leave-one-acquisition-out cross-acquisition retrieval (primary generalisation result)
-├── probe_leave_study_out.py               ← strict leave-one-study-out retrieval (real METASPACE submitter identity)
-├── probe_crossplatform_consistency.py     ← cross-platform sample-embedding consistency
-├── probe_crossplatform_retrieval.py       ← cross-platform channel-level retrieval breakdown
-│
-├── smiles_retrieval.py                    ← cross-modal image→SMILES retrieval via InfoNCE projector
-├── make_liver_nodule_roi.py               ← ROI annotation tool for liver nodule TIFF
-├── show_fixed_samples.py                  ← visualise fixed/representative samples from dataset
-├── export_explorer_data.py                ← generates the data bundled into the interactive embedding explorer
-│
-├── plot_figure1_bc.py … plot_figure7.py   ← main-figure panel generation
-├── plot_figS1.py … plot_figS14.py         ← supplementary-figure panel generation
-├── plot_utils.py                          ← shared plotting helpers (quality filters, pipeline diagrams,
-│                                             representative-image selection: median-variance, not max)
-└── save_legends.py                        ← standalone colorbar/legend SVGs for the figure scripts above
+└── code/
+    ├── metabofm_paths.py                      ← central path configuration (set METABOFM_ROOT / METABOFM_RAW_DIR)
+    │
+    ├── models/
+    │   ├── __init__.py
+    │   ├── resnet_encoder.py                  ← Stage 1: ResNet-18 spatial encoder (Barlow Twins)
+    │   └── channel_aggregator.py              ← Stage 2: permutation-invariant channel Transformer
+    │
+    ├── dataset.py                             ← per-channel loader, returns (1, H, W) tensors
+    ├── utils.py                               ← shared utilities (normalization, metrics, etc.)
+    │
+    ├── pretrain_stage1.py                     ← Stage 1 Barlow Twins pretraining (ResNet-18)
+    ├── pretrain_stage2.py                     ← Stage 2 masked channel pretraining
+    ├── plot_training.py                       ← training loss/metric plots from checkpoint logs
+    │
+    ├── filter_samples.py                      ← quality-filter raw MSI samples (aspect ratio, sparsity)
+    ├── build_channel_csv.py                   ← build per-channel metadata CSV from MSI manifests
+    ├── build_molecule_centroids.py            ← per-m/z centroid embeddings for molecule-level analyses
+    ├── build_figure7_data.py                  ← drug-likeness scoring data (feeds main Fig. 6 panels d-f)
+    ├── generate_dataset_diversity_table.py    ← Supplementary Table 1: sample counts by platform/organ
+    │
+    ├── extract_stage1_embeddings.py           ← extract Stage 1 CLS tokens (resnet_cls_embeddings.npy)
+    ├── extract_stage1_patch_embeddings.py     ← extract 28×28 patch maps (resnet_patch_embeddings.npy)
+    ├── extract_stage2_embeddings.py           ← extract Stage 2 embeddings (sample_cls + channel_refined)
+    ├── extract_stage2_unambiguous.py          ← Stage 2 embeddings restricted to n_cand==1 channels
+    ├── extract_unambiguous_variants.py        ← all representation variants, unambiguous-candidate subset
+    ├── extract_imagenet_baseline.py           ← ImageNet-pretrained ResNet zero-shot baseline
+    ├── fuse_embeddings.py                     ← post-hoc ResNet CLS + MolFormer fusion (n_cand==1 only)
+    ├── align_embeddings.py                    ← align embedding spaces across candidate/filtered manifests
+    │
+    ├── benchmarks.py                          ← HMDB super_class/class F1, leave-platform-out probes
+    ├── ablation_datasize.py                   ← Stage 2 training-data-scale ablation
+    ├── ablation_multiseed.py / ablation_rerun_50_75.py  ← ablation seed/checkpoint reruns
+    ├── compute_stage1_hmdb_map.py             ← Stage 1-only HMDB MAP@k benchmark
+    ├── compute_lisi_scores.py / compute_lisi_scores_raw.py  ← LISI technical-covariate mixing scores
+    ├── compute_contiguity_baseline.py         ← random-assignment contiguity baseline (k=6)
+    ├── probe_spatial_patches.py               ← spatial patch analysis: coherence, microregions, leave-out probes
+    ├── probe_patch_coherence.py               ← training-time sanity check: spatial coherence vs checkpoint
+    ├── probe_resnet_umap.py                   ← per-TIFF UMAP with ROI annotations (requires TIFF stacks)
+    ├── probe_sample_umap.py                   ← sample-level UMAP of stage2_sample_cls embeddings
+    ├── probe_molecule_spatial_consistency.py  ← within- vs between-organ spatial map similarity
+    ├── probe_molecule_variance.py             ← full within/between-molecule cosine-similarity analysis (all m/z)
+    ├── probe_channel_colocalization.py        ← channel-pair spatial colocalization vs Stage 1 embedding similarity
+    ├── probe_crossdataset_retrieval.py        ← leave-one-acquisition-out cross-acquisition retrieval (primary generalisation result)
+    ├── probe_leave_study_out.py               ← strict leave-one-study-out retrieval (real METASPACE submitter identity)
+    ├── probe_crossplatform_consistency.py     ← cross-platform sample-embedding consistency
+    ├── probe_crossplatform_retrieval.py       ← cross-platform channel-level retrieval breakdown
+    │
+    ├── smiles_retrieval.py                    ← cross-modal image→SMILES retrieval via InfoNCE projector
+    ├── make_liver_nodule_roi.py               ← ROI annotation tool for liver nodule TIFF
+    ├── show_fixed_samples.py                  ← visualise fixed/representative samples from dataset
+    ├── export_explorer_data.py                ← generates the data bundled into the interactive embedding explorer
+    │
+    ├── plot_figure1_bc.py … plot_figure7.py   ← main-figure panel generation
+    ├── plot_figS1.py … plot_figS14.py         ← supplementary-figure panel generation
+    ├── plot_utils.py                          ← shared plotting helpers (quality filters, pipeline diagrams,
+    │                                             representative-image selection: median-variance, not max)
+    └── save_legends.py                        ← standalone colorbar/legend SVGs for the figure scripts above
 ```
 
 The `plot_figure*.py` / `plot_figS*.py` / `save_legends.py` scripts are the figure-generation layer consumed

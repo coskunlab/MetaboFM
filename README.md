@@ -9,6 +9,12 @@ spanning 8 ionization sources, 17 mass analyzer types, and both polarities.
 
 See [`ARCHITECTURE.md`](ARCHITECTURE.md) for the full model and pipeline description.
 
+## Layout
+
+All source lives in [`code/`](code/); run scripts as `python code/<script>.py` from the
+repository root (or `cd code` first — either works). `data/` and `outputs/` are expected as
+siblings of `code/`, not inside it — see Configuration below.
+
 ## Installation
 
 ```bash
@@ -21,7 +27,7 @@ can run on CPU.
 
 ## Configuration
 
-All scripts import their data/output directories from [`metabofm_paths.py`](metabofm_paths.py)
+All scripts import their data/output directories from [`code/metabofm_paths.py`](code/metabofm_paths.py)
 instead of hardcoding paths. Set these environment variables before running anything:
 
 ```bash
@@ -54,7 +60,8 @@ resulting sample-level manifest into the channel-level manifest used everywhere 
 
 ## Reproducing the figures
 
-Each script writes per-panel SVGs and a caption file to `outputs/figures/<name>/`.
+Run any script with `python code/<script>.py`; each writes per-panel SVGs and a caption file to
+`outputs/figures/<name>/`.
 
 | Figure | Script |
 |---|---|

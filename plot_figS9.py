@@ -172,7 +172,7 @@ def _spatial_contiguity(labels, grid=PATCH_GRID, fg_mask=None):
 
 
 def draw_panels_bcd(resnet_meta, emb, centroids_s1, mean_s1, comps_s1):
-    from plot_utils import pick_best_sample
+    from plot_utils import pick_best_sample, add_scale_bar_stretched
     rng_shuffle = np.random.default_rng(SHUFFLE_SEED)
     records = []
 
@@ -201,6 +201,7 @@ def draw_panels_bcd(resnet_meta, emb, centroids_s1, mean_s1, comps_s1):
         ax.imshow(sim_real, cmap=SIM_CMAP, vmin=-1, vmax=1, aspect="equal",
                   interpolation="antialiased")
         ax.axis("off")
+        add_scale_bar_stretched(ax, sp, PATCH_GRID, PATCH_GRID, color="black", fontsize=6)
         save_panel(fig, f"figS9_panelB_{slug}_real")
         plt.close(fig)
 
@@ -219,6 +220,7 @@ def draw_panels_bcd(resnet_meta, emb, centroids_s1, mean_s1, comps_s1):
         fig, ax = plt.subplots(figsize=(3, 3))
         ax.imshow(img, cmap="viridis", aspect="equal", interpolation="antialiased")
         ax.axis("off")
+        add_scale_bar_stretched(ax, sp, 224, 224, fontsize=6)
         save_panel(fig, f"figS9_panelB_{slug}_reference")
         plt.close(fig)
 

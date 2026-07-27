@@ -31,6 +31,16 @@ from skimage.draw import polygon
 
 sys.path.insert(0, str(Path(__file__).parent))
 from models.resnet_encoder import build_ion_encoder_for_inference
+from plot_utils import add_scale_bar_stretched
+
+# Maps each sample's dataset date-time stamp (tiff_path.stem before "__") to
+# its corpus sample_path, for scale-bar pixel-size lookup.
+_SAMPLE_PATH_BY_DATASET_PREFIX = {
+    "2021-06-30_20h06m19s": r"metaspace_images_dump\msi_fm_samples5\2021-06-30_20h06m19s_r0_c0_C22.npz",
+    "2023-10-02_17h16m22s": r"metaspace_images_dump\msi_fm_samples5\2023-10-02_17h16m22s_r0_c0_C32.npz",
+    "2025-12-05_00h57m15s": r"metaspace_images_dump\msi_fm_samples5\2025-12-05_00h57m15s_r0_c0_C32.npz",
+    "2023-11-27_04h09m07s": r"metaspace_images_dump\msi_fm_samples5\2023-11-27_04h09m07s_r0_c0_C32.npz",
+}
 
 # ── default sample (lymph node) ───────────────────────────────────────────────
 DEFAULT_TIFF = METABOFM_ROOT / "outputs/tiff_stacks_by_condition/Tumor/2021-06-30_20h06m19s__Lymph_node.tif"
@@ -409,6 +419,9 @@ def run_sample(checkpoint: str, tiff_path: Path, label_override: str | None = No
         axes[row, 0].imshow(bg_ch, cmap="viridis")
         axes[row, 0].set_title(f"Ch {ch_idx} ion image  (score={ch_scores[ch_idx]:.4f})", fontsize=9)
         axes[row, 0].axis("off")
+        _sp = _SAMPLE_PATH_BY_DATASET_PREFIX.get(tiff_path.stem.split("__")[0])
+        if _sp is not None:
+            add_scale_bar_stretched(axes[row, 0], _sp, bg_ch.shape[1], bg_ch.shape[0], fontsize=6)
 
         im = axes[row, 1].imshow(u_n, cmap="RdBu_r", vmin=0, vmax=1)
         axes[row, 1].set_title("UMAP-1 spatial map", fontsize=9)
@@ -444,6 +457,9 @@ def run_sample(checkpoint: str, tiff_path: Path, label_override: str | None = No
         axes[row, 0].imshow(bg_ch, cmap="viridis")
         axes[row, 0].set_title(f"Ch {ch_idx} ion image  (score={ch_scores[ch_idx]:.4f})", fontsize=9)
         axes[row, 0].axis("off")
+        _sp = _SAMPLE_PATH_BY_DATASET_PREFIX.get(tiff_path.stem.split("__")[0])
+        if _sp is not None:
+            add_scale_bar_stretched(axes[row, 0], _sp, bg_ch.shape[1], bg_ch.shape[0], fontsize=6)
 
         im = axes[row, 1].imshow(u_n, cmap="RdBu_r", vmin=0, vmax=1)
         axes[row, 1].set_title(f"PC1 spatial map ({var_r[0]*100:.1f}%)", fontsize=9)

@@ -13,7 +13,6 @@ Panels:
      per m/z group for Stage 2 (coloured by organ diversity)
 
 Usage:
-
   python plot_figure3.py
 """
 
@@ -28,7 +27,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from plot_utils import set_nature_style, load_specific_channel, find_channel_for_mz, draw_pipeline_diagram, _load_npz, _is_clean
+from plot_utils import set_nature_style, load_specific_channel, find_channel_for_mz, draw_pipeline_diagram, _load_npz, _is_clean, add_scale_bar
 set_nature_style()
 
 # â"€â"€ CONFIG â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
@@ -125,7 +124,9 @@ def find_mz_examples(ch_meta, organs, n_per=2):
     non-boundary-only channel images in every organ in `organs`.
     Returns (mz_val, [rows_organ1, rows_organ2, ...]).
     """
+    from plot_utils import _excluded
     cm = ch_meta.copy()
+    cm = cm[~cm["sample_path"].apply(_excluded)]
     cm["mz_r"] = cm["mz"].round(3)
     per_organ = {o: cm[cm["Organism_Part"] == o] for o in organs}
     common = set(per_organ[organs[0]]["mz_r"])
@@ -195,11 +196,13 @@ def draw_panel_d(ax_parent, ch_meta):
             if img is not None:
                 ax_in.imshow(img, cmap="viridis", aspect="equal",
                              interpolation="antialiased")
+                add_scale_bar(ax_in, row["sample_path"], fontsize=5)
                 _slug = organ.lower().replace(" ", "_")
                 _stem = f"figure3_panelD_{_slug}_{col_i + 1}"
                 _f, _a = plt.subplots(figsize=(3, 3))
                 _a.imshow(img, cmap="viridis", aspect="equal", interpolation="antialiased")
                 _a.axis("off")
+                add_scale_bar(_a, row["sample_path"])
                 _f.savefig(str(PANEL_DIR / f"{_stem}.svg"), bbox_inches="tight", pad_inches=0)
                 plt.close(_f)
                 print(f"  saved panel {_stem}.svg")

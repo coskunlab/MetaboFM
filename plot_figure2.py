@@ -15,7 +15,6 @@ Supplementary content previously embedded here has been split out:
 Run those separately if you need to regenerate them.
 
 Usage:
-
   python plot_figure2.py
 """
 
@@ -28,7 +27,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from plot_utils import set_nature_style, load_best_channel, pick_best_sample
+from plot_utils import set_nature_style, load_best_channel, pick_best_sample, add_scale_bar
 set_nature_style()
 
 # ── CONFIG ───────────────────────────────────────────────────────────────────
@@ -216,6 +215,7 @@ def save_spatial_gallery_panels(ch_meta):
         fig_s, ax_s = plt.subplots(figsize=(3, 3))
         ax_s.imshow(img, cmap="viridis", aspect="equal", interpolation="antialiased")
         ax_s.axis("off")
+        add_scale_bar(ax_s, sp)
         fig_s.savefig(str(PANEL_DIR / f"figure2_panelE_{organ.lower()}.svg"),
                       bbox_inches="tight", pad_inches=0)
         plt.close(fig_s)

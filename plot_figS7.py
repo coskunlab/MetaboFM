@@ -24,7 +24,6 @@ Panels:
      population.
 
 Usage:
-
   python plot_figS7.py
 """
 
@@ -37,7 +36,14 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from plot_utils import set_nature_style
+from plot_utils import set_nature_style, add_scale_bar
+
+_SAMPLE_PATH_BY_LABEL = {
+    "Lymph node": r"metaspace_images_dump\msi_fm_samples5\2021-06-30_20h06m19s_r0_c0_C22.npz",
+    "Brain":      r"metaspace_images_dump\msi_fm_samples5\2023-10-02_17h16m22s_r0_c0_C32.npz",
+    "Liver":      r"metaspace_images_dump\msi_fm_samples5\2025-12-05_00h57m15s_r0_c0_C32.npz",
+    "Stomach":    r"metaspace_images_dump\msi_fm_samples5\2023-11-27_04h09m07s_r0_c0_C32.npz",
+}
 set_nature_style()
 
 # ── CONFIG ──────────────────────────────────────────────────────────────
@@ -135,6 +141,10 @@ def draw_top3_maps(fig, sample_label, arr):
             else:
                 ax.imshow(stack[col_i], cmap=cmap, aspect="equal", interpolation="antialiased")
             ax.axis("off")
+            if row_i == 0:
+                sp = _SAMPLE_PATH_BY_LABEL.get(sample_label)
+                if sp is not None:
+                    add_scale_bar(ax, sp, display_size=stack[col_i].shape[-1], fontsize=6)
             if row_i == 0:
                 ax.set_title(f"Ch {int(top3_chs[col_i])}\n(silhouette={top3_scores[col_i]:.3f})",
                              fontsize=8, fontweight="bold", pad=4)

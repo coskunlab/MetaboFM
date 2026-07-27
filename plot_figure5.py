@@ -28,7 +28,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.lines import Line2D
 from sklearn.preprocessing import normalize
-from plot_utils import set_nature_style, load_best_channel, draw_pipeline_diagram
+from plot_utils import set_nature_style, load_best_channel, draw_pipeline_diagram, add_scale_bar, _excluded
 set_nature_style()
 
 # â"€â"€ CONFIG â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
@@ -340,6 +340,7 @@ def main():
     rng_f = np.random.default_rng(42)
     for organ in top_organs_f:
         pool = df.loc[df["organ"] == organ, "sample_path"].values
+        pool = np.array([sp for sp in pool if not _excluded(sp)])
         chosen = rng_f.choice(pool, size=min(N_COLS_F, len(pool)), replace=False)
         _slug = organ.lower().replace(" ", "_")
         for col_i, sample_path in enumerate(chosen):
@@ -351,6 +352,7 @@ def main():
             _fi, _ai = plt.subplots(figsize=(3, 3))
             _ai.imshow(img, cmap="viridis", aspect="equal", interpolation="antialiased")
             _ai.axis("off")
+            add_scale_bar(_ai, sample_path)
             _fi.savefig(str(PANEL_DIR / f"{_stem}.svg"), bbox_inches="tight", pad_inches=0)
             plt.close(_fi)
             print(f"  saved panel {_stem}.svg")

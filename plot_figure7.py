@@ -14,7 +14,7 @@ Panels:
      the same three queries.
 
 Usage:
-  conda run -n torch_gpu python code_v2/plot_figure7.py
+  conda run -n torch_gpu python plot_figure7.py
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ import matplotlib.patches as mpatches
 import matplotlib.gridspec as gridspec
 from matplotlib.lines import Line2D
 from sklearn.preprocessing import normalize
-from plot_utils import set_nature_style, load_best_channel, draw_pipeline_diagram
+from plot_utils import set_nature_style, load_best_channel, draw_pipeline_diagram, add_scale_bar, _excluded
 set_nature_style()
 
 # â”€â”€ CONFIG â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -96,15 +96,18 @@ def draw_panel_e_retrieval(fig, outer_gs, sm, query_idxs, nn_s2_list, sims_s2_li
         q_slug = organ.lower().replace(" ", "_")
         for col_i, (idx, is_q) in enumerate(zip(show_idxs, is_q_flags)):
             ax  = fig.add_subplot(gs[qi_pos + 1, col_i])
-            img = load_best_channel(sm.loc[idx, "sample_path"])
+            sample_path = sm.loc[idx, "sample_path"]
+            img = load_best_channel(sample_path)
             if img is not None:
                 ax.imshow(img, cmap="viridis", aspect="equal", interpolation="antialiased")
+                add_scale_bar(ax, sample_path, fontsize=5)
                 # save individual sample image
                 role = "query" if is_q else f"nn{col_i}"
                 idx_organ = sm.loc[idx, "organ"]
                 _f, _a = plt.subplots(figsize=(3, 3 * img.shape[0]/img.shape[1]))
                 _a.imshow(img, cmap="viridis", aspect="equal", interpolation="antialiased")
                 _a.axis("off")
+                add_scale_bar(_a, sample_path)
                 _stem = f"figure7_panelE_{q_slug}_{role}_{idx_organ.lower().replace(' ','_')}"
                 _f.savefig(str(PANEL_DIR / f"{_stem}.svg"), bbox_inches="tight", pad_inches=0)
                 plt.close(_f)
@@ -138,7 +141,7 @@ def load_data():
     coords = np.load(str(UMAP_DIR / "umap2d_stage2.npy")).astype(np.float32)
 
     ch = pd.read_csv(EMB_DIR / "stage2_channel_meta.csv",
-                     usecols=["sample_path", "Organism_Part", "organism", "dataset_id"])
+                     usecols=["sample_path", "Organism_Part", "organism"])
     samp = ch.drop_duplicates("sample_path").reset_index(drop=True)
 
     sm = pd.read_csv(EMB_DIR / "stage2_sample_meta.csv")
@@ -179,6 +182,7 @@ def pick_query(sm, emb_normed, organ, organism=None):
         mask = (sm["organ"] == organ) & (sm["organism"] == organism)
     else:
         mask = sm["organ"] == organ
+    mask = mask & (~sm["sample_path"].apply(_excluded))
     idx = np.where(mask)[0]
     if len(idx) == 0:
         raise ValueError(f"No samples for {organ} / {organism}")

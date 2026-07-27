@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import normalize as sk_normalize
-from plot_utils import set_nature_style
+from plot_utils import set_nature_style, add_scale_bar_stretched
 set_nature_style()
 
 # -- CONFIG -------------------------------------------------------------------
@@ -142,6 +142,8 @@ def draw_panel_a(axes_grid):
         ax_raw.imshow(raw_norm, cmap="viridis", aspect="equal",
                       interpolation="nearest")
         ax_raw.axis("off")
+        sample_path = f"metaspace_images_dump\\msi_fm_samples5\\{info['npz']}"
+        add_scale_bar_stretched(ax_raw, sample_path, IMG_SIZE, IMG_SIZE, fontsize=6)
         ax_raw.set_title(f"{organ}\n(c={info['contiguity']:.2f})",
                          fontsize=8, fontweight="bold", pad=3)
 

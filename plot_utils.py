@@ -26,6 +26,68 @@ import matplotlib.patheffects as pe
 # ── DATA PATH ──────────────────────────────────────────────────────────────────
 MSI_DATA = MSI_RAW_DIR
 
+# ── DATASETS WITHOUT A RESOLVABLE PIXEL SIZE ───────────────────────────────────
+# METASPACE submitter never filled in Pixel_Size (older 2017-2018 datasets), or
+# the dataset has since been removed/renamed on METASPACE. Excluded from
+# representative-sample selection so every displayed panel can carry an
+# accurate scale bar -- an image we can't scale is a worse choice than one we
+# can, all else equal.
+EXCLUDED_DATASET_IDS = {
+    "2017-03-01_11h13m38s",  # Brain -- no Pixel_Size in METASPACE metadata
+    "2017-02-27_15h21m19s",  # Brain -- no Pixel_Size in METASPACE metadata
+    "2017-02-24_15h04m10s",  # Brain -- no Pixel_Size in METASPACE metadata
+    "2018-09-04_00h52m04s",  # Kidney -- no Pixel_Size in METASPACE metadata
+    "2023-06-15_18h29m50s",  # Kidney -- dataset no longer found on METASPACE
+    # All 16 "Cervix | Muscle" datasets: a single 2018-05-29 HeLa/NIH3T3
+    # coculture submission batch, none of which have Pixel_Size in METASPACE
+    # (verified for all 16, not just a sample). No representative image for
+    # this organ can ever carry a scale bar -- listed explicitly so pool
+    # construction drops this organ to zero candidates and callers fall
+    # through to the next-best organ instead of silently showing an
+    # unscaled panel.
+    "2018-05-29_11h21m59s", "2018-05-29_11h22m28s", "2018-05-29_11h22m45s",
+    "2018-05-29_11h22m56s", "2018-05-29_11h23m11s", "2018-05-29_11h23m20s",
+    "2018-05-29_11h23m47s", "2018-05-29_11h24m00s", "2018-05-29_11h24m22s",
+    "2018-05-29_11h25m02s", "2018-05-29_11h25m30s", "2018-05-29_11h25m58s",
+    "2018-05-29_11h27m02s", "2018-05-29_11h27m19s", "2018-05-29_11h27m32s",
+    "2018-05-29_11h27m48s",
+    # All 24 "whole body" datasets: entirely removed/renamed on METASPACE
+    # (verified for all 24 -- none resolve at all, not just missing
+    # Pixel_Size). Same wholesale-gap situation as Cervix | Muscle above.
+    "2024-04-10_18h09m46s", "2024-04-10_18h20m52s", "2024-04-10_18h24m30s",
+    "2024-04-10_18h26m43s", "2024-04-10_18h29m55s", "2024-04-10_18h31m51s",
+    "2024-04-10_18h32m21s", "2024-04-10_18h33m02s", "2024-04-10_18h35m23s",
+    "2024-04-10_18h36m11s", "2024-04-10_18h37m47s", "2024-04-10_18h49m34s",
+    "2024-04-12_08h53m57s", "2024-04-12_08h55m06s", "2024-04-12_08h55m13s",
+    "2024-04-12_09h03m46s", "2024-04-12_09h41m36s", "2024-04-12_09h51m19s",
+    "2024-04-12_09h54m11s", "2024-04-12_09h56m37s", "2024-04-12_09h58m46s",
+    "2024-04-12_10h02m39s", "2024-04-12_10h02m46s", "2024-04-12_10h06m04s",
+}
+
+
+def _excluded(sample_path: str | Path) -> bool:
+    return any(ds in str(sample_path) for ds in EXCLUDED_DATASET_IDS)
+
+
+# ── REPRESENTATIVE-SAMPLE LOGGING (for scale-bar pixel-size lookup) ────────────
+_REPR_SAMPLE_LOG = METABOFM_ROOT / "outputs/scale_bar_manifest.csv"
+
+def _log_repr_sample(sample_path: str | Path) -> None:
+    """Append a spatial sample used for figure display to a manifest CSV,
+    so pixel-size lookups (for scale bars) only need to cover samples that
+    are actually shown, not the full corpus. Best-effort; never raises."""
+    try:
+        _REPR_SAMPLE_LOG.parent.mkdir(parents=True, exist_ok=True)
+        line = f"{sample_path}\n"
+        existing = set()
+        if _REPR_SAMPLE_LOG.exists():
+            existing = set(_REPR_SAMPLE_LOG.read_text(encoding="utf-8").splitlines())
+        if str(sample_path) not in existing:
+            with open(_REPR_SAMPLE_LOG, "a", encoding="utf-8") as f:
+                f.write(line)
+    except Exception:
+        pass
+
 # ── NATURE rcPARAMS ────────────────────────────────────────────────────────────
 NATURE_RC = {
     "font.family":          "Arial",
@@ -131,18 +193,90 @@ def _interior_signal_frac(img: np.ndarray, border_frac: float = 0.15) -> float:
     return interior_nonzero / total_nonzero
 
 
+def _touches_border(img: np.ndarray, margin: int = 3, max_border_frac: float = 0.03) -> bool:
+    """
+    True if tissue signal reaches the outer `margin`-pixel frame of the image,
+    i.e. the organ is cropped/cut off rather than fully contained with a clean
+    zero-intensity margin on all sides.
+    """
+    H, W = img.shape
+    m = min(margin, H // 2, W // 2)
+    if m <= 0:
+        return False
+    border_vals = np.concatenate([
+        img[:m, :].flatten(), img[-m:, :].flatten(),
+        img[:, :m].flatten(), img[:, -m:].flatten(),
+    ])
+    if border_vals.size == 0:
+        return False
+    return float((border_vals > 0).mean()) > max_border_frac
+
+
+def _gradient_strength(img: np.ndarray) -> float:
+    """
+    Max |Pearson r| between row-index/row-mean and column-index/column-mean.
+    High values indicate a dominant linear intensity gradient across the
+    whole image (acquisition drift / ion-suppression trend) rather than
+    organ-shaped spatial structure.
+    """
+    H, W = img.shape
+    row_means = img.mean(axis=1)
+    col_means = img.mean(axis=0)
+    with np.errstate(invalid="ignore"):
+        r_row = np.corrcoef(np.arange(H), row_means)[0, 1]
+        r_col = np.corrcoef(np.arange(W), col_means)[0, 1]
+    r_row = 0.0 if np.isnan(r_row) else abs(float(r_row))
+    r_col = 0.0 if np.isnan(r_col) else abs(float(r_col))
+    return max(r_row, r_col)
+
+
+def _n_significant_components(img: np.ndarray, min_component_frac: float = 0.05) -> int:
+    """
+    Number of spatially disconnected tissue pieces in the image, ignoring
+    components smaller than min_component_frac of the total nonzero area
+    (noise specks). Used to reject frames showing multiple separate tissue
+    sections (e.g. two brain slices mounted side by side) rather than one
+    single, whole organ section.
+    """
+    from scipy.ndimage import label
+    mask = img > 0
+    total = int(mask.sum())
+    if total == 0:
+        return 0
+    labeled, n = label(mask)
+    if n <= 1:
+        return n
+    sizes = np.bincount(labeled.ravel())[1:]  # skip background label 0
+    return int(((sizes / total) >= min_component_frac).sum())
+
+
 def _is_clean(img: np.ndarray, min_nonzero: float = 0.10, min_std: float = 0.02,
-              min_interior_frac: float = 0.45) -> bool:
+              min_interior_frac: float = 0.45, border_margin: int = 3,
+              max_border_frac: float = 0.03, max_gradient: float = 0.5,
+              max_components: int = 1) -> bool:
     """
     True if the channel image passes minimum quality thresholds.
-    Rejects mostly-empty images, flat/noisy channels, and channels whose
-    signal is mostly a thin boundary rim rather than distributed within the
-    tissue interior (min_interior_frac).
+    Rejects mostly-empty images, flat/noisy channels, channels whose signal
+    is mostly a thin boundary rim rather than distributed within the tissue
+    interior (min_interior_frac), channels where the organ is cropped/cut
+    off at the image edge rather than fully visible with a clean background
+    margin (border_margin/max_border_frac), channels dominated by a linear
+    intensity gradient rather than real spatial structure (max_gradient),
+    and channels showing more than max_components separate disconnected
+    tissue pieces in the same frame.
     """
     std, nzf = _channel_quality(img)
     if nzf < min_nonzero or std < min_std:
         return False
-    return _interior_signal_frac(img) >= min_interior_frac
+    if _interior_signal_frac(img) < min_interior_frac:
+        return False
+    if _touches_border(img, margin=border_margin, max_border_frac=max_border_frac):
+        return False
+    if _gradient_strength(img) > max_gradient:
+        return False
+    if _n_significant_components(img) > max_components:
+        return False
+    return True
 
 
 def load_model_view_channel(
@@ -162,6 +296,7 @@ def load_model_view_channel(
     patch = _load_npz(sample_path)
     if patch is None:
         return None
+    _log_repr_sample(sample_path)
     C = patch.shape[0]
 
     stds = patch.reshape(C, -1).std(axis=1)
@@ -190,6 +325,7 @@ def load_model_view_specific(
     patch = _load_npz(sample_path)
     if patch is None:
         return None
+    _log_repr_sample(sample_path)
     img = patch[int(channel_idx)]
     return _pad_and_resize(img, size)
 
@@ -199,16 +335,29 @@ def pick_median_sample(
     n_candidates: int = 60,
     min_nonzero: float = 0.10,
     min_std: float = 0.02,
+    seed: int = 42,
 ) -> str | None:
     """
     Return the sample at the median spatial variance among candidates that pass
     quality filtering.  This avoids cherry-picking (not best, not worst) while
     excluding truly empty or noisy images.
 
-    Scans up to n_candidates paths; returns None if all fail to load.
+    Candidates are a seeded random sample of up to n_candidates paths drawn from
+    the full pool (not the first n_candidates in file order) -- sample_paths is
+    typically grouped by dataset/acquisition order in the source CSV, so taking
+    a plain prefix systematically under-represents platforms/analyzers that
+    appear later in the file. Returns None if all fail to load.
     """
+    all_paths = [sp for sp in sample_paths if not _excluded(sp)]
+    if len(all_paths) > n_candidates:
+        rng = np.random.default_rng(seed)
+        idx = rng.choice(len(all_paths), size=n_candidates, replace=False)
+        candidate_paths = [all_paths[i] for i in idx]
+    else:
+        candidate_paths = all_paths
+
     scored: list[tuple[float, str]] = []
-    for sp in list(sample_paths)[:n_candidates]:
+    for sp in candidate_paths:
         patch = _load_npz(sp)
         if patch is None:
             continue
@@ -224,7 +373,9 @@ def pick_median_sample(
         return None
 
     scored.sort(key=lambda x: x[0])
-    return scored[len(scored) // 2][1]   # median
+    picked = scored[len(scored) // 2][1]   # median
+    _log_repr_sample(picked)
+    return picked
 
 
 def find_channel_for_mz(
@@ -254,7 +405,11 @@ def find_channel_for_mz(
     """
     cm = ch_meta.copy()
     matches = cm[(cm["mz"] - mz_target).abs() < 0.001].reset_index(drop=True)
-    candidates = list(matches.head(n_candidates).iterrows())
+    matches = matches[~matches["sample_path"].apply(_excluded)].reset_index(drop=True)
+    if len(matches) > n_candidates:
+        rng = np.random.default_rng(42)
+        matches = matches.iloc[rng.choice(len(matches), size=n_candidates, replace=False)]
+    candidates = list(matches.iterrows())
 
     loaded: list[tuple[np.ndarray, str, int]] = []
     for _, row in candidates:
@@ -294,7 +449,138 @@ def find_channel_for_mz(
 
     scored.sort(key=lambda x: x[0])
     _, best_sp, best_ci = scored[len(scored) // 2]
+    _log_repr_sample(best_sp)
     return best_sp, best_ci
+
+
+# ── SCALE BARS ──────────────────────────────────────────────────────────────────
+
+_PIXEL_SIZE_CSV = METABOFM_ROOT / "outputs/scale_bar_pixel_sizes.csv"
+_CHANNEL_DIMS_CSV = METABOFM_ROOT / "outputs/filtering/channels_v2_filtered.csv"
+
+_pixel_size_lookup: dict | None = None
+_raw_dims_lookup: dict | None = None
+
+
+def _load_scale_bar_lookups() -> None:
+    global _pixel_size_lookup, _raw_dims_lookup
+    if _pixel_size_lookup is not None:
+        return
+    import pandas as pd
+
+    _pixel_size_lookup = {}
+    if _PIXEL_SIZE_CSV.exists():
+        px = pd.read_csv(_PIXEL_SIZE_CSV)
+        for _, row in px.iterrows():
+            x, y = row.get("pixel_size_x_um"), row.get("pixel_size_y_um")
+            if pd.notna(x) and pd.notna(y):
+                _pixel_size_lookup[str(row["sample_path"])] = (float(x), float(y))
+
+    _raw_dims_lookup = {}
+    if _CHANNEL_DIMS_CSV.exists():
+        dims = pd.read_csv(_CHANNEL_DIMS_CSV, usecols=["sample_path", "img_h", "img_w"])
+        dims = dims.drop_duplicates("sample_path")
+        for _, row in dims.iterrows():
+            _raw_dims_lookup[str(row["sample_path"])] = (int(row["img_h"]), int(row["img_w"]))
+
+
+def _nice_scalebar_length(value_um: float) -> float:
+    """Snap to a visually clean 1/2/5 x 10^n length, at or just below value_um."""
+    import math
+    if value_um <= 0:
+        return 0.0
+    exp = math.floor(math.log10(value_um))
+    for mult in (5, 2, 1):
+        candidate = mult * (10 ** exp)
+        if candidate <= value_um:
+            return float(candidate)
+    return float(10 ** exp)
+
+
+def _draw_scale_bar_artist(
+    ax, um_per_display_px: float, display_width_px: float,
+    loc: str = "lower right", color: str = "white", fontsize: int = 7,
+) -> bool:
+    """Low-level draw given an already-computed um-per-displayed-pixel scale."""
+    if um_per_display_px is None or um_per_display_px <= 0:
+        return False
+    field_of_view_um = um_per_display_px * display_width_px
+    bar_um = _nice_scalebar_length(field_of_view_um * 0.2)
+    if bar_um <= 0:
+        return False
+    bar_px = bar_um / um_per_display_px
+
+    from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
+    import matplotlib.font_manager as fm
+
+    label = f"{bar_um:g} µm"
+    scalebar = AnchoredSizeBar(
+        ax.transData, bar_px, label, loc,
+        pad=0.4, color=color, frameon=False,
+        size_vertical=display_width_px * 0.012,
+        fontproperties=fm.FontProperties(size=fontsize),
+    )
+    ax.add_artist(scalebar)
+    return True
+
+
+def add_scale_bar(
+    ax, sample_path: str | Path, display_size: int = 224,
+    loc: str = "lower right", color: str = "white", fontsize: int = 7,
+) -> bool:
+    """
+    Draw a physically accurate scale bar on a panel showing the standard
+    model-view image (`_pad_and_resize`: zero-pad to a square of side
+    `S = max(img_h, img_w)`, then resize to `display_size` x `display_size`).
+    The effective pixel size of the *displayed* image is
+    `pixel_size_um * (S / display_size)`, not the raw acquisition's pixel size.
+
+    Silently does nothing (returns False) if pixel size or raw dimensions
+    are unavailable for this sample -- an omitted scale bar is preferable to
+    a wrong one.
+    """
+    _load_scale_bar_lookups()
+    sp = str(sample_path)
+
+    px = _pixel_size_lookup.get(sp)
+    dims = _raw_dims_lookup.get(sp)
+    if px is None or dims is None:
+        return False
+
+    px_x, px_y = px
+    raw_h, raw_w = dims
+    S = max(raw_h, raw_w)
+    um_per_display_px = ((px_x + px_y) / 2.0) * (S / display_size)
+    return _draw_scale_bar_artist(ax, um_per_display_px, display_size,
+                                   loc=loc, color=color, fontsize=fontsize)
+
+
+def add_scale_bar_stretched(
+    ax, sample_path: str | Path, display_width: int, display_height: int,
+    loc: str = "lower right", color: str = "white", fontsize: int = 7,
+) -> bool:
+    """
+    Like `add_scale_bar`, but for panels that resize the raw image directly
+    to (display_height, display_width) without square-padding first (i.e. an
+    anisotropic stretch, not the standard model-view pipeline). Uses the
+    horizontal axis's effective pixel size for the bar.
+
+    Silently does nothing (returns False) if pixel size or raw dimensions
+    are unavailable for this sample.
+    """
+    _load_scale_bar_lookups()
+    sp = str(sample_path)
+
+    px = _pixel_size_lookup.get(sp)
+    dims = _raw_dims_lookup.get(sp)
+    if px is None or dims is None:
+        return False
+
+    px_x, _px_y = px
+    _raw_h, raw_w = dims
+    um_per_display_px = px_x * (raw_w / display_width)
+    return _draw_scale_bar_artist(ax, um_per_display_px, display_width,
+                                   loc=loc, color=color, fontsize=fontsize)
 
 
 # ── BACKWARD-COMPATIBLE ALIASES ────────────────────────────────────────────────

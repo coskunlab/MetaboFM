@@ -1,6 +1,6 @@
 """
 export_explorer_data.py
------------------------
+------------------------
 Exports data for the extended (multi-space) client-side embedding explorer:
   - "sample"  : Stage 2 sample-level embeddings (n=5,600), spatial thumbnail
                 = mean-of-retained-channels projection per sample.
@@ -38,7 +38,7 @@ set_data_root(DATA_ROOT)
 
 EMB_DIR  = METABOFM_ROOT / "outputs/embeddings_v2"
 UMAP_DIR = METABOFM_ROOT / "outputs/sample_umap"
-OUT_PATH = METABOFM_ROOT / "outputs" / "explorer_data.js"
+OUT_PATH = METABOFM_ROOT / "outputs/explorer_data_v2.js"
 
 # Thumbnails are PNG-compressed (not raw bytes) since MSI ion images have
 # large uniform/padded regions that compress well (~2x smaller than raw
@@ -189,7 +189,7 @@ def build_sample_space():
     xy   = np.load(str(UMAP_DIR / "umap2d_stage2.npy")).astype(np.float32)
     ch   = pd.read_csv(EMB_DIR / "stage2_channel_meta.csv",
                        usecols=["sample_path", "Organism_Part", "organism",
-                                "analyzerType", "polarity", "dataset_id", "ionisationSource"])
+                                "analyzerType", "polarity", "ionisationSource"])
     samp = ch.drop_duplicates("sample_path").reset_index(drop=True)
     sm   = pd.read_csv(EMB_DIR / "stage2_sample_meta.csv")
     sm   = sm.merge(samp, on="sample_path", how="left")
@@ -283,6 +283,45 @@ def build_channel_space(emb_path: Path, meta_path: Path, label: str,
     }, shared_thumbs
 
 
+def build_molecule_space():
+    """
+    Molecule-centroid space: one point per (m/z group) molecule centroid,
+    same set used for Fig. 6 / Supp. Fig. S13's drug-similarity analysis.
+    No sample-level metadata (organ/organism/analyzer/dataset) applies here
+    -- coloured by HMDB super-class instead, with drug-match status and
+    drug-similarity score shown per point. No spatial ion-image thumbnail
+    (a centroid is an average over many channels/samples, not one image).
+    """
+    print("=== molecule space (centroids, drug-similarity) ===")
+    FIG7_DIR = METABOFM_ROOT / "outputs/figure7_data"
+    CENT_DIR = METABOFM_ROOT / "outputs/molecule_centroids"
+
+    df = pd.read_csv(FIG7_DIR / "figure7_mol_df.csv")
+    emb = np.load(str(CENT_DIR / "centroid_embeddings.npy")).astype(np.float32)
+    assert len(df) == len(emb), f"row mismatch: {len(df)} vs {len(emb)}"
+
+    xy = df[["umap_x", "umap_y"]].to_numpy(dtype=np.float32)
+    emb_i8, scale = quantize_i8(emb)
+
+    has_drug = df["has_drug"].fillna(False).astype(bool).to_numpy()
+    drug_sim = df["drug_similarity"].astype(np.float32).to_numpy()
+    drug_sim = np.nan_to_num(drug_sim, nan=0.0)
+
+    return {
+        "n": len(df),
+        "umap_b64": b64(xy),
+        "emb_i8_b64": b64(emb_i8),
+        "emb_dim": int(emb.shape[1]),
+        "emb_scale": scale,
+        "hmdb_super_class": categorical(df["hmdb_super_class"], np.uint8),
+        "mol_name": df["mol_name"].fillna("Unknown").astype(str).tolist(),
+        "drug_name": [None if pd.isna(v) else str(v) for v in df["drug_name"]],
+        "has_drug_b64": b64(has_drug.astype(np.uint8)),
+        "drug_similarity_b64": b64(drug_sim),
+        "mz": [round(float(v), 4) if pd.notna(v) else None for v in df["mz_r"]],
+    }
+
+
 def main():
     sample_space = build_sample_space()
 
@@ -310,12 +349,15 @@ def main():
 
     chan_thumb_blob, chan_thumb_offsets = shared_thumbs
 
+    molecule_space = build_molecule_space()
+
     data = {
         "sample": sample_space,
         "chan1": chan1_space,
         "chan2": chan2_space,
         "chan_thumb_blob_b64": base64.b64encode(chan_thumb_blob).decode("ascii"),
         "chan_thumb_offsets_b64": b64(chan_thumb_offsets),
+        "molecule": molecule_space,
     }
 
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)

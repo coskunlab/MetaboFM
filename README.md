@@ -81,6 +81,10 @@ Each script writes per-panel SVGs and a caption file to `outputs/figures/<name>/
 | Supp. Fig. S14 | `plot_figS14.py` |
 | Supp. Software 1 (interactive embedding explorer) | `export_explorer_data.py` generates the data bundled into the self-contained HTML explorer |
 
+The compiled explorer (a single self-contained HTML file, no install/server/account needed) is available
+as a download from the [Supplementary Software release](https://github.com/coskunlab/MetaboFM/releases/tag/explorer-v1)
+rather than committed to the repository, since it embeds ~130 MB of data and exceeds GitHub's per-file size limit.
+
 ## Pretrained weights
 
 Final Stage 1 and Stage 2 checkpoints are hosted on [Zenodo/Hugging Face — add DOI]. Download and

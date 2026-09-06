@@ -80,6 +80,15 @@ scheme throughout. Two exceptions:
 The compiled explorer (a single self-contained HTML file, no install/server/account needed) is available
 as a download from the [Supplementary Software release](https://github.com/coskunlab/MetaboFM/releases/tag/explorer-v1)
 rather than committed to the repository, since it embeds ~130 MB of data and exceeds GitHub's per-file size limit.
+A demo walkthrough (PDF) and screen-capture video are included in the same release.
+
+Opening the HTML file loads an interactive UMAP of Stage 2 sample-level embeddings (n = 5,600, the full
+corpus) with tabs for Sample-level (Stage 2), Channel-level (Stage 1), Channel-level (Stage 2), and Molecules
+(drug similarity). Points can be recolored by metadata field (e.g. organ), and clicking any point retrieves
+its top-K nearest neighbors by cosine similarity (excluding same-acquisition samples, K adjustable via a
+slider) and displays the query and neighbors' ion images. A natural-language query box (e.g. "mouse brain
+samples with positive polarity") supports keyword matching by default, or an optional local AI model. Expected
+output is immediate — there is no computation to wait on beyond the browser rendering the UMAP on load.
 
 ## Pretrained weights
 

@@ -305,9 +305,30 @@ Discussion for the full analysis.
     └── plot_top_loading_channels.py           ← renders top-loading metabolite ion images against H&E
 ```
 
-This pipeline needs two conda environments run in sequence (GPU-enabled for `probe_*.py`, base
-`metabofm` for everything else) — see "Working conventions" above and the README's "H&E and
-MALDI-IHC comparison" section for the full run order.
+This pipeline needs two conda environments run in sequence: a GPU-enabled env for METASPACE
+queries and Stage 1 inference (`probe_*.py`), then the base `metabofm` env for PCA/UMAP and
+plotting (`embed_*.py`, `plot_fig*.py`) — see "Working conventions" above. Run in this order:
+
+1. `probe_optical_availability.py`, `probe_optical_registration.py`, `optical_alignment.py`,
+   `plot_optical_registration.py` — locates and registers each acquisition's METASPACE optical
+   (H&E) image to its ion-image grid.
+2. `probe_histology_comparison.py` / `probe_ihc_histology_comparison.py` — encode Stage 1 patch
+   tokens for the untargeted-MSI and MALDI-IHC datasets respectively.
+3. `embed_histology_comparison.py` / `embed_ihc_histology_comparison.py` — PCA over concatenated
+   per-channel patch tokens, restricted to interior tissue tokens (`histology_masks.py`,
+   `validate_histology_masks.py`).
+4. `prepare_histology_annotations.py` — generates a blinded annotation bundle for a human
+   annotator to draw anatomical region boundaries on the H&E image before any MSI/MALDI-IHC
+   output is consulted.
+5. `identify_top_loading_channels.py` / `plot_top_loading_channels.py` — maps a principal
+   component's top-loading channels back to molecule identities for comparison against H&E.
+6. `plot_figS12.py`–`plot_figS16.py` — blind ground-truth validation, the concatenation
+   diagnostic, and the two H&E-invisible-structure demonstrations (untargeted MSI and MALDI-IHC).
+
+The MALDI-IHC dataset (brain tissue from wild-type and APP-SAA/hAβSAA knock-in mice, a 19-marker
+mass-tag antibody panel imaged on a Bruker rapifleX MALDI-TOF-MS at 20 μm resolution) is not part
+of the METASPACE-derived training corpus; see Methods for the acquisition protocol and
+Yagnik et al. 2021, Lim et al. 2023, and Bell et al. 2025 for the underlying MALDI-IHC method.
 
 The `plot_figure*.py` / `plot_figS*.py` / `save_legends.py` scripts are the figure-generation layer consumed
 by the manuscript submission accompanying this repository; see the figure table in `README.md` for the

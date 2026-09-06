@@ -58,8 +58,9 @@ identity) — only `probe_leave_study_out.py` uses true study identity; everywhe
 
 ## H&E / MALDI-IHC histology-comparison pipeline
 
-`code/probe_optical_availability.py` through `code/plot_figS16.py` (see README's "H&E and
-MALDI-IHC comparison" section for the exact run order) test whether Stage 1's spatial embeddings
+`code/probe_optical_availability.py` through `code/plot_figS16.py` (see `ARCHITECTURE.md`'s "H&E
+/ MALDI-IHC histology-comparison pipeline" section for the exact run order) test whether Stage 1's
+spatial embeddings
 track real anatomy and resolve structure invisible in registered histology. This pipeline needs
 **two conda environments run in sequence**, not one: a GPU-enabled env for METASPACE queries and
 Stage 1 inference (`probe_*.py`), then the base `metabofm` env for PCA/UMAP/plotting (`embed_*.py`,

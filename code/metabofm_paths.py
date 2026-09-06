@@ -15,9 +15,14 @@ Override via environment variables:
   METABOFM_RAW_DIR   Directory containing the raw per-sample MSI files
                      (.npz ion-image stacks) downloaded from METASPACE.
                      Defaults to METABOFM_ROOT / "data" / "raw".
+  METABOFM_IHC_RAW_DIR   Directory containing the raw MALDI-IHC dataset
+                     (mass-tag antibody panel; not sourced from METASPACE),
+                     used only by the H&E/optical-image comparison pipeline.
+                     Defaults to METABOFM_ROOT / "data_external" / "maldi_ihc".
 """
 import os
 from pathlib import Path
 
 METABOFM_ROOT = Path(os.environ.get("METABOFM_ROOT", Path(__file__).resolve().parent.parent))
 MSI_RAW_DIR = Path(os.environ.get("METABOFM_RAW_DIR", METABOFM_ROOT / "data" / "raw"))
+IHC_RAW_DIR = Path(os.environ.get("METABOFM_IHC_RAW_DIR", METABOFM_ROOT / "data_external" / "maldi_ihc"))

@@ -54,7 +54,7 @@ Single-channel input means:
   Stage 2, not by augmenting Stage 1 to be order-invariant)
 - Weights shared across all ion images (same encoder for every m/z)
 
-### Stage 2 — `ChannelAggregator` Transformer (`models/channel_aggregator.py`)
+### Stage 2 — the cross-channel aggregation Transformer (`models/channel_aggregator.py`)
 
 A Transformer that operates on the **set of Stage 1 CLS tokens** for all channels in an MSI sample.
 Permutation-invariant by design (no fixed positional encoding over the channel sequence) — channel order is
@@ -155,7 +155,7 @@ All embedding files land in `outputs/embeddings/` alongside matching `*_meta.csv
 
 ---
 
-## Key Results (current manuscript, Submission 2)
+## Key Results (current manuscript, Submission 3)
 
 HMDB chemical-taxonomy classification/retrieval is the **primary** evaluation family in the current
 manuscript (Results section 1), not a supporting result — that framing changed from an earlier draft.
@@ -194,14 +194,30 @@ Molecule-level retrieval (per-class MAP@10, Stage 2): lipids 0.840, organohetero
 | Spatial contiguity score, k=6 clusters, 5,600 samples | **0.539** vs. 0.167 random baseline |
 | Channel colocalization Spearman ρ (Stage 1 vs. m/z-only) | 0.055 vs. 0.013 |
 
-### Cross-study / cross-platform generalisation
+### Cross-acquisition / cross-platform generalisation
 
 | Metric | Value |
 |---|---|
-| Leave-one-study-out weighted Recall@1 (Stage 2 / Stage 1 mean-pool / random) | 0.807 / 0.786 / 0.302 |
+| Leave-one-acquisition-out weighted Recall@1 (Stage 2 / Stage 1 mean-pool / random) | 0.807 / 0.786 / 0.302 |
+| Leave-one-study-out weighted Recall@1 (Stage 2 / Stage 1 / m/z-only), stricter control using real METASPACE-submitter identity | 0.562 / 0.559 / 0.687 |
 | Same-tissue same-platform cosine similarity | 0.891 |
 | Same-tissue, different-platform (Δ vs. above) | 0.842 (Δ = 0.049) |
 | Different-tissue, different-platform | 0.829 |
+
+The leave-one-acquisition-out number only excludes each query's own acquisition file, so part of
+its margin over baselines reflects acquisition-batch signatures rather than organ biology alone;
+the leave-one-study-out control additionally excludes the query's entire submitting research group
+and is the more conservative estimate of cross-acquisition generalisation. See the manuscript's
+Discussion for the full analysis.
+
+### Histological ground-truth validation (Supplementary Figs. S12–S16)
+
+| Metric | Value |
+|---|---|
+| Blind H&E-annotated regions, untargeted MSI, significant at FDR q<0.05 | 3 / 3 |
+| Blind H&E-annotated regions, MALDI-IHC, significant at FDR q<0.05 (jointly corrected with MSI) | 5 / 24 |
+| H&E-invisible metabolite hot-spot, untargeted MSI lung section (token-level Mann–Whitney U) | p = 5.13×10⁻¹² |
+| Amyloid plaque structure, MALDI-IHC Alzheimer's-model brain section (token-level Mann–Whitney U) | p = 5.51×10⁻¹² |
 
 ---
 
@@ -265,13 +281,34 @@ Molecule-level retrieval (per-class MAP@10, Stage 2): lipids 0.840, organohetero
     ├── export_explorer_data.py                ← generates the data bundled into the interactive embedding explorer
     │
     ├── plot_figure1_bc.py … plot_figure7.py   ← main-figure panel generation
-    ├── plot_figS1.py … plot_figS14.py         ← supplementary-figure panel generation
+    ├── plot_figS1.py … plot_figS19.py         ← supplementary-figure panel generation
     ├── plot_utils.py                          ← shared plotting helpers (quality filters, pipeline diagrams,
     │                                             representative-image selection: median-variance, not max)
     └── save_legends.py                        ← standalone colorbar/legend SVGs for the figure scripts above
 ```
 
+### H&E / MALDI-IHC histology-comparison pipeline
+
+```
+    ├── probe_optical_availability.py          ← flags METASPACE samples with a usable H&E optical image
+    ├── probe_optical_registration.py          ← registers an MSI ion-image grid onto its H&E image
+    ├── optical_alignment.py                   ← shared affine-crop helpers for the registration step
+    ├── plot_optical_registration.py           ← renders the registration overlay for visual QC
+    ├── histology_masks.py                     ← Otsu + morphological interior-tissue token masks
+    ├── validate_histology_masks.py            ← threshold x margin sensitivity sweep for the masks above
+    ├── prepare_histology_annotations.py       ← blinded annotation bundle (GeoJSON templates) for a human annotator
+    ├── probe_histology_comparison.py          ← encodes untargeted-MSI patch tokens (Stage 1) for the comparison
+    ├── probe_ihc_histology_comparison.py      ← encodes MALDI-IHC patch tokens (Stage 1) for the comparison
+    ├── embed_histology_comparison.py          ← PCA/UMAP + figure rendering, untargeted MSI
+    ├── embed_ihc_histology_comparison.py      ← PCA/UMAP + figure rendering, MALDI-IHC
+    ├── identify_top_loading_channels.py       ← maps a PC's top-loading channels to molecule identities
+    └── plot_top_loading_channels.py           ← renders top-loading metabolite ion images against H&E
+```
+
+This pipeline needs two conda environments run in sequence (GPU-enabled for `probe_*.py`, base
+`metabofm` for everything else) — see "Working conventions" above and the README's "H&E and
+MALDI-IHC comparison" section for the full run order.
+
 The `plot_figure*.py` / `plot_figS*.py` / `save_legends.py` scripts are the figure-generation layer consumed
-by the manuscript at `Y:\coskun-lab\Efe\MetaboFM\manuscript\Submission 2\` — see that directory's `CLAUDE.md`
-for the full figure pipeline and the numbering-consistency requirements between this directory and the `.tex`
-sources.
+by the manuscript submission accompanying this repository; see the figure table in `README.md` for the
+script-to-figure mapping.

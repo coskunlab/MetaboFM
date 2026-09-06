@@ -583,6 +583,24 @@ def add_scale_bar_stretched(
                                    loc=loc, color=color, fontsize=fontsize)
 
 
+def add_scale_bar_known_pixel_size(
+    ax, um_per_native_px: float, native_width_px: float, display_width_px: float,
+    loc: str = "lower right", color: str = "white", fontsize: int = 7,
+) -> bool:
+    """
+    Like `add_scale_bar`/`add_scale_bar_stretched`, but for panels with no
+    `sample_path` cache entry (e.g. data from outside the main training
+    corpus/local .npz cache) where the physical pixel size is already known
+    by other means (a live METASPACE metadata fetch, an instrument spec).
+    Pass the already-known microns-per-pixel of the *native* (un-resized)
+    image, its native width in pixels, and the width in pixels it is
+    actually displayed at (equal to native_width_px if shown 1:1).
+    """
+    um_per_display_px = um_per_native_px * (native_width_px / display_width_px)
+    return _draw_scale_bar_artist(ax, um_per_display_px, display_width_px,
+                                   loc=loc, color=color, fontsize=fontsize)
+
+
 # ── BACKWARD-COMPATIBLE ALIASES ────────────────────────────────────────────────
 
 def load_best_channel(sample_path: str | Path, size: int = 224) -> np.ndarray | None:

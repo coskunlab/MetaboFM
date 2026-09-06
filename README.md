@@ -58,6 +58,37 @@ resulting sample-level manifest into the channel-level manifest used everywhere 
    retrieval generalization, including the strict real-study-identity validation.
 6. **Figures** — one script per main/supplementary figure; see the table below.
 
+## H&E and MALDI-IHC comparison
+
+A separate pipeline tests whether MetaboFM's spatial embeddings track real tissue anatomy and
+resolve structure invisible in registered H&E histology, in both untargeted MSI and a targeted
+MALDI-IHC (mass-tag antibody) dataset. It requires two conda environments run in sequence: a
+GPU-enabled one for METASPACE queries and Stage 1 inference (`probe_*.py`), then the base
+`metabofm` env for PCA/UMAP and plotting (`embed_*.py`, `plot_fig*.py`), since some GPU-enabled
+setups have a BLAS conflict that crashes on `matplotlib.savefig`/`sklearn`/`numpy.linalg` calls.
+Run in this order:
+
+1. `probe_optical_availability.py`, `probe_optical_registration.py`, `optical_alignment.py`,
+   `plot_optical_registration.py` — locates and registers each MSI acquisition's METASPACE optical
+   (H&E) image to its ion-image grid via the acquisition's stored affine transform.
+2. `probe_histology_comparison.py` / `probe_ihc_histology_comparison.py` — encode the trained
+   Stage 1 checkpoint's patch tokens for the untargeted-MSI and MALDI-IHC datasets respectively.
+3. `embed_histology_comparison.py` / `embed_ihc_histology_comparison.py` — PCA over the
+   concatenated per-channel patch tokens, restricted to interior tissue tokens
+   (`histology_masks.py`, `validate_histology_masks.py`).
+4. `prepare_histology_annotations.py` — generates a blinded annotation bundle for a human
+   annotator to draw anatomical region boundaries directly on the H&E image, before any MSI/
+   MALDI-IHC channel or MetaboFM output is consulted.
+5. `identify_top_loading_channels.py` / `plot_top_loading_channels.py` — maps a principal
+   component's top-loading channels back to molecule identities for visual comparison against H&E.
+6. `plot_figS12.py`–`plot_figS16.py` — the blind ground-truth validation, the concatenation
+   diagnostic, and the two H&E-invisible-structure demonstrations (untargeted MSI and MALDI-IHC).
+
+The MALDI-IHC dataset (brain tissue from wild-type and APP-SAA/hAβSAA knock-in mice, a 19-marker
+mass-tag antibody panel imaged on a Bruker rapifleX MALDI-TOF-MS at 20 μm resolution) is not part
+of the METASPACE-derived training corpus; see Methods for the acquisition protocol and
+Yagnik et al. 2021, Lim et al. 2023, and Bell et al. 2025 for the underlying MALDI-IHC method.
+
 ## Reproducing the figures
 
 Run any script with `python code/<script>.py`; each writes per-panel SVGs and a caption file to
@@ -86,7 +117,15 @@ Run any script with `python code/<script>.py`; each writes per-panel SVGs and a 
 | Supp. Fig. S12 | `plot_figS12.py` |
 | Supp. Fig. S13 | `plot_figS13.py` |
 | Supp. Fig. S14 | `plot_figS14.py` |
+| Supp. Fig. S15 | `plot_figS15.py` |
+| Supp. Fig. S16 | `plot_figS16.py` |
+| Supp. Fig. S17 | `plot_figS17.py` |
+| Supp. Fig. S18 | `plot_figS18.py` |
+| Supp. Fig. S19 | `plot_figS19.py` |
 | Supp. Software 1 (interactive embedding explorer) | `export_explorer_data.py` generates the data bundled into the self-contained HTML explorer |
+
+Supplementary Figs. S12–S16 come from a separate H&E/MALDI-IHC histology-comparison pipeline
+(see "H&E and MALDI-IHC comparison" below), run in a specific order rather than independently.
 
 The compiled explorer (a single self-contained HTML file, no install/server/account needed) is available
 as a download from the [Supplementary Software release](https://github.com/coskunlab/MetaboFM/releases/tag/explorer-v1)

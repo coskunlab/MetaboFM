@@ -18,6 +18,9 @@ dependencies:
   - tqdm
   - requests
   - pillow
+  - tifffile
   - pip
   - pip:
       - python-docx
+      - metaspace2020
+      - roifile

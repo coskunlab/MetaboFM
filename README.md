@@ -42,6 +42,11 @@ via its GraphQL API. `filter_samples.py` applies the quality filters described i
 (minimum pixel dimensions, sparsity, channel count) and `build_channel_csv.py` expands the
 resulting sample-level manifest into the channel-level manifest used everywhere downstream.
 
+[`metaspace_dataset_accessions.csv`](metaspace_dataset_accessions.csv) lists the METASPACE
+`dataset_id` accession for all 5,600 curated samples, alongside organism, tissue, polarity,
+analyzer type, and ionization source — each `dataset_id` resolves to its source dataset at
+`https://metaspace2020.eu/dataset/<dataset_id>`.
+
 ## Pipeline
 
 1. **Data curation** — `filter_samples.py`, `build_channel_csv.py`.
